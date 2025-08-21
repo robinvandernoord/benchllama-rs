@@ -44,9 +44,7 @@ class RustRunner:
 
         # Write source and tests
         src_dir = dir_path / "src"
-        tests_dir = dir_path / "tests"
         src_dir.mkdir(parents=True, exist_ok=True)
-        tests_dir.mkdir(parents=True, exist_ok=True)
 
         cur_file = src_dir / "lib.rs"
 
