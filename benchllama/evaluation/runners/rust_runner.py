@@ -9,23 +9,21 @@ from .utils import get_prompt_and_completion
 class RustRunner:
     def __init__(self, execution_dir: Path):
         self.execution_dir = execution_dir
-        self.rust_template_dir = None
+
+        self.rust_template_dir = self.execution_dir / "rust_module"
+        self.rust_template_dir.mkdir(parents=True, exist_ok=True)
+        # Initialize a reusable Cargo library template once
+        cargo_toml = self.rust_template_dir / "Cargo.toml"
+        if not cargo_toml.exists():
+            subprocess.run(
+                ["cargo init --lib --name main"],
+                cwd=self.rust_template_dir,
+                check=True,
+                shell=True,
+                capture_output=True,
+            )
 
     def run(self, problem: pd.Series):
-        if self.rust_template_dir is None:
-            self.rust_template_dir = self.execution_dir / "rust_module"
-            self.rust_template_dir.mkdir(parents=True, exist_ok=True)
-            # Initialize a reusable Cargo library template once
-            cargo_toml = self.rust_template_dir / "Cargo.toml"
-            if not cargo_toml.exists():
-                subprocess.run(
-                    ["cargo init --lib --name main"],
-                    cwd=self.rust_template_dir,
-                    check=True,
-                    shell=True,
-                    capture_output=True,
-                )
-
         result = Result.FAILURE
         error = ""
         # Build code from prompt and completion

@@ -30,5 +30,4 @@ class CodeRunner:
         if language not in self.runners:
             return Result.FAILURE, "Language not supported!"
 
-        print('runner for', language)
         return self.runners[language].run(problem)
