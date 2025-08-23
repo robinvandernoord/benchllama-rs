@@ -20,12 +20,12 @@ class CodeRunner:
         self.execution_dir = execution_dir
 
         self.runners = {
-            "cpp": CppRunner,
-            "go": GoRunner,
-            "javascript": JavascriptRunner,
-            "java": JavaRunner,
-            "python": PythonRunner,
-            "rust": RustRunner,
+            "cpp": CppRunner(self.execution_dir),
+            "go": GoRunner(self.execution_dir),
+            "javascript": JavascriptRunner(self.execution_dir),
+            "java": JavaRunner(self.execution_dir),
+            "python": PythonRunner(self.execution_dir),
+            "rust": RustRunner(self.execution_dir),
         }
 
     def run(self, problem: pd.Series):
@@ -34,6 +34,6 @@ class CodeRunner:
         if language not in self.runners:
             return Result.FAILURE, "Language not supported!"
 
-        runner = self.runners[language](self.execution_dir)
+        runner = self.runners[language]
 
         return runner.run(problem)
