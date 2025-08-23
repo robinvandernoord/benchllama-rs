@@ -4,7 +4,24 @@ from benchllama.constants import Result
 import pandas as pd
 import subprocess
 import shutil
+import fcntl
 from .utils import get_prompt_and_completion
+
+
+def initialize_cargo_once(rust_template_dir: Path):
+    lockfile = rust_template_dir / ".init.lock"
+    with open(lockfile, "w") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        cargo_toml = rust_template_dir / "Cargo.toml"
+        if not cargo_toml.exists():
+            subprocess.run(
+                ["cargo", "init", "--lib", "--name", "main"],
+                cwd=rust_template_dir,
+                check=True,
+                capture_output=True,
+            )
+        fcntl.flock(f, fcntl.LOCK_UN)
+
 
 class RustRunner:
     def __init__(self, execution_dir: Path):
@@ -15,14 +32,8 @@ class RustRunner:
         if self.rust_template_dir is None:
             self.rust_template_dir = self.execution_dir / "rust_module"
             self.rust_template_dir.mkdir(parents=True, exist_ok=True)
-            # Initialize a reusable Cargo library template once
-            subprocess.run(
-                    ["cargo init --lib --name main"],
-                    cwd=self.rust_template_dir,
-                    check=True,
-                    shell=True,
-                    capture_output=True,
-                )
+            # Initialize a reusable Cargo library template once, using lockfile to prevent parallel deadlock:
+            initialize_cargo_once(self.rust_template_dir)
 
         result = Result.FAILURE
         error = ""
